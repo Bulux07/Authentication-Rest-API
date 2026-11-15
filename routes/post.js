@@ -5,7 +5,7 @@ const verify = require('./verifiedToken'); // Match your actual filename (verify
 router.get('/', verify, async (req, res) => {
     try {
         // Find the user in MongoDB using the _id stored inside the JWT token payload
-        const user = await User.findById(req.user._id);
+        const user = await User.findById(req.user._id).select('-password');
         
         // Send back the user data (or whatever protected data you want)
         res.json({
