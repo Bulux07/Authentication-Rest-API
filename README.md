@@ -68,12 +68,12 @@ The API is then available at `http://localhost:3000`.
 
 ## API Endpoints
 
-| Method | Endpoint             | Auth required | Description                  |
-| ------ | -------------------- | ------------- | ---------------------------- |
-| GET    | `/`                  | No            | Health check                 |
-| POST   | `/api/user/register` | No            | Create a new user            |
-| POST   | `/api/user/login`    | No            | Log in and receive a JWT     |
-| GET    | `/api/posts`         | Yes           | Example protected route      |
+| Method | Endpoint             | Requires token | Description                           |
+| ------ | -------------------- | -------------- | ------------------------------------- |
+| GET    | `/`                  | No             | Health check                          |
+| POST   | `/api/user/register` | No             | Create a new user                     |
+| POST   | `/api/user/login`    | No             | Log in with email and password, receive a JWT |
+| GET    | `/api/posts`         | Yes            | Example protected route (send the JWT in the `auth-token` header) |
 
 ### Register
 
