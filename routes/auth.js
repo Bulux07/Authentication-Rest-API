@@ -1,62 +1,60 @@
-//import package
+//import packages and modules
 const router = require('express').Router();
 const User = require('../model/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
-const {registerValidation, logInValidate} = require('../validation');
+const { registerValidation, logInValidate } = require('../validation');
 
+// REGISTER ROUTE
+router.post('/register', async (req, res) => {
+    // Validate user input first using Joi
+    const { error } = registerValidation(req.body);
+    if (error) return res.status(400).send(error.details[0].message);
 
+    // Check if the user already exists in the database
+    const emailExist = await User.findOne({ email: req.body.email });
+    if (emailExist) return res.status(400).send('Email already exists');
 
-router.post('/register', async (req,res) => {
-
-    //validate user first
-    const{error} = registerValidation(req.body);
-    if(error) return res.status(400).send(error.details[0].message);
-
-    //if user already in the database
-    const emailExist = await User.findOne({email: req.body.email});
-    if(emailExist) return res.status(400).send('Email already exist');
-
-    //hash password, complexity of string thats generated
+    // Hash the password for security
     const salt = await bcrypt.genSalt(10);
     const hashPassword = await bcrypt.hash(req.body.password, salt);
 
-
-    //create a new user
+    // Create a new user instance
     const user = new User({
         name: req.body.name,
         email: req.body.email,
         password: hashPassword
     });
-    try{
+
+    try {
         const savedUser = await user.save();
-        res.send({user:user.id});
-    }catch(err){
+        // Send back the user id on success
+        res.send({ user: user._id });
+    } catch (err) {
         res.status(400).send(err);
     }
 });
 
-//log in 
-router.post('/login', async (req,res) =>{
-        //validate user first
-        const{error} = logInValidate(req.body);
-        if(error) return res.status(400).send(error.details[0].message);
+// LOGIN ROUTE
+router.post('/login', async (req, res) => {
+    // Validate login input first using Joi
+    const { error } = logInValidate(req.body);
+    if (error) return res.status(400).send(error.details[0].message);
 
-        //if user already in the database or if doesnt exist
-        const user = await User.findOne({email: req.body.email});
-        if(!user) return res.status(400).send('Email or password is wrong');
+    // Check if the email exists in the database
+    const user = await User.findOne({ email: req.body.email });
+    if (!user) return res.status(400).send('Email or password is wrong');
 
-        //if password is correct
-        const validPass = await bcrypt.compare(req.body.password, user.password);
-        if(!validPass) return res.status(400).send("invalid password")
+    // Check if the submitted password matches the hashed database password
+    const validPass = await bcrypt.compare(req.body.password, user.password);
+    if (!validPass) return res.status(400).send('Invalid password');
 
-        //create and assigned a token
-        const token = jwt.sign({__id: user._id}, process.env.TOKEN_SECRET);
-        res.header('auth-token', token).send(token);
+    // Create and assign a JWT token
+    const token = jwt.sign({ _id: user._id }, process.env.TOKEN_SECRET);
 
-
-        //res.send('Logged in');
+    // Attach token to response header and send it back to the client
+    res.header('auth-token', token).send(token);
 });
 
 module.exports = router;

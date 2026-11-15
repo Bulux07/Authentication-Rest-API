@@ -1,27 +1,27 @@
-//import package
 const mongoose = require('mongoose');
 
-//what we take in, declaring it
 const userSchema = new mongoose.Schema({
     name: {
         type: String,
         required: true,
-        min: 6,
-        max: 255
+        minlength: 2,      // matches Joi
+        maxlength: 50      // matches Joi
     },
-    email:{
+    email: {
         type: String,
         required: true,
-        max: 225,
-        min: 6
+        unique: true,      // Ensures no two users can register the same email
+        lowercase: true,   // Converts emails to lowercase to prevent duplicates
+        minlength: 6,
+        maxlength: 255
     },
-    password:{
+    password: {
         type: String,
         required: true,
-        max: 1024,
-        min: 6
+        minlength: 6,
+        maxlength: 1024    // Large enough to hold bcrypt hashes safely
     },
-    date:{
+    date: {
         type: Date,
         default: Date.now
     }
